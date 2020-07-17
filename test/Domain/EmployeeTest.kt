@@ -4,7 +4,7 @@ import Domain.Employee
 import kotlin.test.*
 import kotlin.test.assertEquals
 
-class Employee {
+class EmployeeTest {
     @Test
     fun superviseTest() {
         val nick = Employee("Nick")
