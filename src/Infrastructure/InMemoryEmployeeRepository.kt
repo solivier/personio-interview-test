@@ -18,5 +18,5 @@ class InMemoryEmployeeRepository : EmployeeRepository {
         return employees
     }
 
-    override fun empty() = employees.clear();
+    override fun empty() = employees.clear()
 }
