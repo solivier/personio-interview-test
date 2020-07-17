@@ -1,6 +1,5 @@
 package com.personio.Domain
 
-import Domain.Employee
 import kotlin.test.*
 import kotlin.test.assertEquals
 
