@@ -1,6 +1,6 @@
 package com.personio.Domain
 
-import com.personio.Infrastructure.Graph
+import com.personio.Infrastructure.EmployeeNode
 import java.lang.RuntimeException
 
 data class Employee(val name: String, val isSupervisorOf: MutableList<String> = mutableListOf(), var isDirectlyManagedBy: String? = null) {
@@ -13,11 +13,11 @@ data class Employee(val name: String, val isSupervisorOf: MutableList<String> = 
         employee.isDirectlyManagedBy = this.name
     }
 
-    fun generateGraph(employeesList: List<Employee>, visited: List<String> = emptyList()): Graph {
+    fun generateGraph(employeesList: List<Employee>, visited: List<String> = emptyList()): EmployeeNode {
         if (visited.contains(this.name)) {
             throw RuntimeException("cycle detected")
         }
 
-        return Graph(this.name.toString(), employeesList.filter { it.isDirectlyManagedBy == this.name }.map { it.generateGraph(employeesList, visited.plus(this.name)) })
+        return EmployeeNode(this.name.toString(), employeesList.filter { it.isDirectlyManagedBy == this.name }.map { it.generateGraph(employeesList, visited.plus(this.name)) })
     }
 }

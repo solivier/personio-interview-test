@@ -1,7 +1,7 @@
 package com.personio.Application
 
 import com.personio.Domain.Employee
-import com.personio.Infrastructure.Graph
+import com.personio.Infrastructure.EmployeeNode
 import com.personio.Infrastructure.InMemoryEmployeeRepository
 import kotlin.test.assertEquals
 import kotlin.test.*
@@ -29,17 +29,17 @@ class BuildHierarchyTreeTest {
         val getTreeHierarchy = BuildHierarchyTree(repository)
         val actual = getTreeHierarchy.invoke()
 
-        val expected = Graph(
+        val expected = EmployeeNode(
             "Jonas",
             listOf(
-                Graph(
+                EmployeeNode(
                     "Sophie",
                     listOf(
-                        Graph(
+                        EmployeeNode(
                             "Nick",
                             listOf(
-                                Graph("Barbara"),
-                                Graph("Pete")
+                                EmployeeNode("Barbara"),
+                                EmployeeNode("Pete")
                             )
                         )
                     )
@@ -71,13 +71,13 @@ class BuildHierarchyTreeTest {
         val getTreeHierarchy = BuildHierarchyTree(repository)
         val actual = getTreeHierarchy.getSupervisors("Barbara")
 
-        val expected = Graph(
+        val expected = EmployeeNode(
             "Sophie",
             listOf(
-                Graph(
+                EmployeeNode(
                     "Nick",
                     listOf(
-                        Graph("Barbara")
+                        EmployeeNode("Barbara")
                     )
                 )
             )

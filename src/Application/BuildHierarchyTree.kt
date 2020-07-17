@@ -1,18 +1,18 @@
 package com.personio.Application
 
 import com.personio.Domain.EmployeeRepository
-import com.personio.Infrastructure.Graph
+import com.personio.Infrastructure.EmployeeNode
 
 class BuildHierarchyTree(val repository: EmployeeRepository) {
-    fun invoke(): Graph {
+    fun invoke(): EmployeeNode {
         val root = repository.all().findLast { e -> e.isDirectlyManagedBy == null }
 
         return root!!.generateGraph(repository.all().filter { it.name != root.name })
     }
 
-    fun getSupervisors(name: String): Graph {
+    fun getSupervisors(name: String): EmployeeNode {
         val leaf = repository.all().findLast { e -> e.name == name }
-        val leafNode = Graph(leaf!!.name)
+        val leafNode = EmployeeNode(leaf!!.name)
 
         if (null == leaf.isDirectlyManagedBy) {
             return leafNode
@@ -21,11 +21,11 @@ class BuildHierarchyTree(val repository: EmployeeRepository) {
         val supervisorOne = repository.all().findLast { it.name == leaf.isDirectlyManagedBy }
 
         if (supervisorOne!!.isDirectlyManagedBy == null) {
-            return Graph(supervisorOne.name, listOf(leafNode))
+            return EmployeeNode(supervisorOne.name, listOf(leafNode))
         }
 
         val supervisorTwo = repository.all().findLast { it.name == supervisorOne.isDirectlyManagedBy }
 
-        return Graph(supervisorTwo!!.name, listOf(Graph(supervisorOne.name, listOf(leafNode))))
+        return EmployeeNode(supervisorTwo!!.name, listOf(EmployeeNode(supervisorOne.name, listOf(leafNode))))
     }
 }
