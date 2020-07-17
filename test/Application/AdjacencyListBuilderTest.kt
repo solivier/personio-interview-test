@@ -7,13 +7,15 @@ import kotlin.test.assertEquals
 class AdjacencyListBuilderTest {
     @Test
     fun testAdjacencyListFromMap() {
-        val employeesHiererchy = listOf(
+        val employeesHierarchy = listOf(
             "Pete" to "Nick",
             "Barbara" to "Nick",
             "Nick" to "Sophie",
             "Sophie" to "Jonas"
         )
 
+        val mapper = AdjacencyListBuilder()
+        val actual = mapper.toAdjacencyList(employeesHierarchy)
 
         val expected = listOf(
             "Pete" to listOf(),
