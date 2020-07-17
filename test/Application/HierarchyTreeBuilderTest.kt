@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 import kotlin.test.*
 
 
-class BuildHierarchyTreeTest {
+class HierarchyTreeBuilderTest {
     @Test
     fun it_generates_a_graph_from_a_flat_structure() {
         val nick = Employee("Nick")
@@ -26,7 +26,7 @@ class BuildHierarchyTreeTest {
         val employeesList = listOf(nick, barbara, pete, sophie, jonas)
         employeesList.forEach { repository.save(it) }
 
-        val getTreeHierarchy = BuildHierarchyTree(repository)
+        val getTreeHierarchy = HierarchyTreeBuilder(repository)
         val actual = getTreeHierarchy.invoke()
 
         val expected = EmployeeNode(
@@ -68,7 +68,7 @@ class BuildHierarchyTreeTest {
         val employeesList = listOf(nick, barbara, pete, sophie, jonas)
         employeesList.forEach { repository.save(it) }
 
-        val getTreeHierarchy = BuildHierarchyTree(repository)
+        val getTreeHierarchy = HierarchyTreeBuilder(repository)
         val actual = getTreeHierarchy.getSupervisors("Barbara")
 
         val expected = EmployeeNode(

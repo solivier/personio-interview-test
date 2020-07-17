@@ -3,7 +3,7 @@ package com.personio.Application
 import com.personio.Domain.EmployeeRepository
 import com.personio.Infrastructure.EmployeeNode
 
-class BuildHierarchyTree(val repository: EmployeeRepository) {
+class HierarchyTreeBuilder(val repository: EmployeeRepository) {
     fun invoke(): EmployeeNode {
         val root = repository.all().findLast { e -> e.isDirectlyManagedBy == null }
 
