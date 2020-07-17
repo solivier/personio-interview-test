@@ -23,4 +23,132 @@ class ApplicationTest {
             }
         }
     }
+
+    @Test
+    fun testEmployeeHierarchy() {
+        withTestApplication({ module(testing = true) }) {
+            handleRequest(HttpMethod.Post, "/newHierarchy") {
+                addHeader("content-type", "application/x-www-form-urlencoded")
+                addHeader("Accept", "application/json")
+                setBody("{\n" +
+                        "  \"Pete\": \"Nick\",\n" +
+                        "  \"Barbara\": \"Nick\",\n" +
+                        "  \"Nick\": \"Sophie\",\n" +
+                        "  \"Sophie\": \"Jonas\"\n" +
+                        "}"
+                )
+            }
+            handleRequest(HttpMethod.Get, "/employeeHierarchy").apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals("{\n" +
+                        "  \"Jonas\" : {\n" +
+                        "    \"Sophie\" : {\n" +
+                        "      \"Nick\" : {\n" +
+                        "        \"Pete\" : { },\n" +
+                        "        \"Barbara\" : { }\n" +
+                        "      }\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        "}", response.content)
+            }
+        }
+    }
+
+    @Test
+    fun testEmployeeHierarchyPost() {
+        withTestApplication({ module(testing = true) }) {
+            handleRequest(HttpMethod.Post, "/newHierarchy") {
+                addHeader("content-type", "application/x-www-form-urlencoded")
+                addHeader("Accept", "application/json")
+                setBody("{\n" +
+                        "  \"Pete\": \"Nick\",\n" +
+                        "  \"Barbara\": \"Nick\",\n" +
+                        "  \"Nick\": \"Sophie\",\n" +
+                        "  \"Sophie\": \"Jonas\"\n" +
+                        "}"
+                )
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+            }
+        }
+    }
+
+    @Test
+    fun testEmployeeSupervisors() {
+        withTestApplication({ module(testing = true) }) {
+            handleRequest(HttpMethod.Post, "/newHierarchy") {
+                addHeader("content-type", "application/x-www-form-urlencoded")
+                addHeader("Accept", "application/json")
+                setBody("{\n" +
+                        "  \"Pete\": \"Nick\",\n" +
+                        "  \"Barbara\": \"Nick\",\n" +
+                        "  \"Nick\": \"Sophie\",\n" +
+                        "  \"Sophie\": \"Jonas\"\n" +
+                        "}"
+                )
+            }
+            handleRequest(HttpMethod.Get, "/employeeSupervisors/Pete").apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals("{\n" +
+                        "  \"Sophie\" : {\n" +
+                        "    \"Nick\" : {\n" +
+                        "      \"Pete\" : { }\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        "}", response.content)
+            }
+        }
+    }
+
+    @Test
+    fun testEmployeeSupervisorsCaseOnlyOneSupervisor() {
+        withTestApplication({ module(testing = true) }) {
+            handleRequest(HttpMethod.Post, "/newHierarchy") {
+                addHeader("content-type", "application/x-www-form-urlencoded")
+                addHeader("Accept", "application/json")
+                setBody("{\n" +
+                        "  \"Pete\": \"Nick\",\n" +
+                        "  \"Barbara\": \"Nick\",\n" +
+                        "  \"Nick\": \"Sophie\",\n" +
+                        "  \"Sophie\": \"Jonas\"\n" +
+                        "}"
+                )
+            }
+            handleRequest(HttpMethod.Get, "/employeeSupervisors/Sophie").apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals("{\n" +
+                        "  \"Jonas\" : {\n" +
+                        "    \"Sophie\" : { }\n" +
+                        "  }\n" +
+                        "}", response.content)
+            }
+        }
+    }
+
+    @Test
+    fun testEmployeeSupervisorsCaseNoSupervisor() {
+        withTestApplication({ module(testing = true) }) {
+            handleRequest(HttpMethod.Post, "/newHierarchy") {
+                addHeader("content-type", "application/x-www-form-urlencoded")
+                addHeader("Accept", "application/json")
+                setBody("{\n" +
+                        "  \"Pete\": \"Nick\",\n" +
+                        "  \"Barbara\": \"Nick\",\n" +
+                        "  \"Nick\": \"Sophie\",\n" +
+                        "  \"Sophie\": \"Jonas\"\n" +
+                        "}"
+                )
+            }
+            handleRequest(HttpMethod.Get, "/employeeSupervisors/Jonas").apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals("{\n" +
+                        "  \"Jonas\" : { }\n" +
+                        "}", response.content)
+            }
+        }
+    }
+
+
+
+
 }

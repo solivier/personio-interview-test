@@ -1,0 +1,9 @@
+POST http://localhost:8080/newHierarchy
+Content-Type: application/json
+
+{
+  "Pete": "Nick",
+  "Barbara": "Nick",
+  "Nick": "Sophie",
+  "Sophie": "Jonas"
+}
