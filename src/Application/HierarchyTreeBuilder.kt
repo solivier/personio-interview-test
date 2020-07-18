@@ -2,6 +2,7 @@ package com.personio.Application
 
 import com.personio.Domain.CycleException
 import com.personio.Domain.EmployeeRepository
+import com.personio.Domain.NoEmployeeFoundException
 import com.personio.Infrastructure.EmployeeNode
 
 class HierarchyTreeBuilder(val repository: EmployeeRepository) {
@@ -14,7 +15,9 @@ class HierarchyTreeBuilder(val repository: EmployeeRepository) {
 
     fun getSupervisors(name: String): EmployeeNode {
         val leaf = repository.all().findLast { e -> e.name == name }
-        val leafNode = EmployeeNode(leaf!!.name)
+            ?: throw NoEmployeeFoundException("No employee named: \"$name\" found !")
+
+        val leafNode = EmployeeNode(leaf.name)
 
         if (null == leaf.isDirectlyManagedBy) {
             return leafNode

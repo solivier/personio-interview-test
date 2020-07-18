@@ -14,10 +14,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.personio.Application.AdjacencyListBuilder
 import com.personio.Application.HierarchyTreeBuilder
 import com.personio.Application.HierarchyTreeValidator
-import com.personio.Domain.CycleException
-import com.personio.Domain.Employee
-import com.personio.Domain.ManagedTwiceException
-import com.personio.Domain.TwoCeoException
+import com.personio.Domain.*
 import com.personio.Infrastructure.SqliteEmployeeRepository
 import io.ktor.jackson.*
 import io.ktor.client.*
@@ -57,6 +54,14 @@ fun Application.module(testing: Boolean = false) {
     val client = HttpClient() {
     }
 
+    fun initDB() {
+        Database.connect("jdbc:sqlite:my.db", "org.sqlite.JDBC")
+        transaction {
+            SchemaUtils.create(com.personio.Infrastructure.Employee)
+        }
+    }
+
+    initDB()
     routing {
         val repository = SqliteEmployeeRepository()
 
@@ -65,10 +70,6 @@ fun Application.module(testing: Boolean = false) {
         }
 
         post("/newHierarchy") {
-            Database.connect("jdbc:sqlite:my.db", "org.sqlite.JDBC")
-            transaction {
-                SchemaUtils.create(com.personio.Infrastructure.Employee)
-            }
             repository.empty();
             val post = call.receiveText()
 
@@ -140,12 +141,15 @@ fun Application.module(testing: Boolean = false) {
         }
 
         get("/employeeSupervisors/{name}") {
-            val name = call.parameters["name"] ?: throw RuntimeException("Name is empty")
+            val name = call.parameters["name"]
 
             val getTreeHierarchy = HierarchyTreeBuilder(repository)
-            val actual = getTreeHierarchy.getSupervisors(name)
-
-            call.respondText(actual.toJson(), contentType = ContentType.Application.Json)
+            try {
+                val actual = getTreeHierarchy.getSupervisors(name!!)
+                call.respondText(actual.toJson(), contentType = ContentType.Application.Json)
+            } catch (e: NoEmployeeFoundException) {
+                call.respondText(e.message.toString(), contentType = ContentType.Application.Json)
+            }
         }
     }
 }

@@ -187,4 +187,25 @@ class ApplicationTest {
             }
         }
     }
+
+    @Test
+    fun testNotFoundEmployee() {
+        withTestApplication({ module(testing = true) }) {
+            handleRequest(HttpMethod.Post, "/newHierarchy") {
+                addHeader("content-type", "application/x-www-form-urlencoded")
+                addHeader("Accept", "application/json")
+                setBody("{\n" +
+                        "  \"Pete\": \"Nick\",\n" +
+                        "  \"Barbara\": \"Nick\",\n" +
+                        "  \"Nick\": \"Sophie\",\n" +
+                        "  \"Sophie\": \"Jonas\"\n" +
+                        "}"
+                )
+            }
+            handleRequest(HttpMethod.Get, "/employeeSupervisors/Michel").apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals("No employee named: \"Michel\" found !", response.content)
+            }
+        }
+    }
 }
