@@ -18,10 +18,12 @@ import com.personio.Domain.CycleException
 import com.personio.Domain.Employee
 import com.personio.Domain.ManagedTwiceException
 import com.personio.Domain.TwoCeoException
-import com.personio.Infrastructure.InMemoryEmployeeRepository
+import com.personio.Infrastructure.SqliteEmployeeRepository
 import io.ktor.jackson.*
 import io.ktor.client.*
 import io.ktor.utils.io.errors.IOException
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.transactions.transaction
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -56,13 +58,17 @@ fun Application.module(testing: Boolean = false) {
     }
 
     routing {
-        val repository = InMemoryEmployeeRepository()
+        val repository = SqliteEmployeeRepository()
 
         get("/") {
             call.respondText("HELLO WORLD!", contentType = ContentType.Application.Json)
         }
 
         post("/newHierarchy") {
+            Database.connect("jdbc:sqlite:my.db", "org.sqlite.JDBC")
+            transaction {
+                SchemaUtils.create(com.personio.Infrastructure.Employee)
+            }
             repository.empty();
             val post = call.receiveText()
 

@@ -10,10 +10,6 @@ class InMemoryEmployeeRepository : EmployeeRepository {
         this.employees.add(employee)
     }
 
-    override fun get(name: String): Employee {
-        return this.employees.findLast { e -> e.name == name }!!
-    }
-
     override fun all(): List<Employee> {
         return employees
     }
