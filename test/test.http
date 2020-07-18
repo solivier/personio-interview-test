@@ -1,17 +1,3 @@
 POST http://localhost:8080/newHierarchy
 Content-Type: application/json
 
-{
-  "a": "b",
-  "b": "c",
-  "c": "d",
-  "d": "e",
-  "e": "f",
-  "f": "g",
-  "h": "i",
-  "i": "j",
-  "j": "k",
-  "k": "l",
-  "l": "m",
-  "z": "c"
-}

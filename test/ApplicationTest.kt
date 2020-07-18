@@ -148,51 +148,43 @@ class ApplicationTest {
         }
     }
 
-//    @Test
-//    fun testHierarchyLoop() {
-//        withTestApplication({ module(testing = true) }) {
-//            handleRequest(HttpMethod.Post, "/newHierarchy") {
-//                addHeader("content-type", "application/x-www-form-urlencoded")
-//                addHeader("Accept", "application/json")
-//                setBody("{\n" +
-//                        "  \"Nick\": \"Jonas\",\n" +
-//                        "  \"Pete\": \"Nick\",\n" +
-//                        "  \"Jonas\": \"Sophie\",\n" +
-//                        "  \"Sophie\": \"Jonas\"\n" +
-//                        "}"
-//                )
-//            }
-//        }
-//    }
+    @Test
+    fun testHierarchyLoop() {
+        withTestApplication({ module(testing = true) }) {
+            handleRequest(HttpMethod.Post, "/newHierarchy") {
+                addHeader("content-type", "application/x-www-form-urlencoded")
+                addHeader("Accept", "application/json")
+                setBody("{\n" +
+                        "  \"Nick\": \"Jonas\",\n" +
+                        "  \"Pete\": \"Nick\",\n" +
+                        "  \"Jonas\": \"Sophie\",\n" +
+                        "  \"Sophie\": \"Jonas\"\n" +
+                        "}"
+                )
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals("a cycle have been detected in the hierarchy", response.content)
+            }
+        }
+    }
 
-//    @Test
-//    fun testPostNoContent() {
-//        withTestApplication({ module(testing = true) }) {
-//            handleRequest(HttpMethod.Post, "/newHierarchy") {
-//                addHeader("content-type", "application/x-www-form-urlencoded")
-//                addHeader("Accept", "application/json")
-//            }.apply {
-//                assertEquals(HttpStatusCode.NoContent, response.status())
-//            }
-//        }
-//    }
-//
-//    @Test
-//    fun testInvalidJson() {
-//        withTestApplication({ module(testing = true) }) {
-//            handleRequest(HttpMethod.Post, "/newHierarchy") {
-//                addHeader("content-type", "application/x-www-form-urlencoded")
-//                addHeader("Accept", "application/json")
-//                setBody("{\n" +
-//                        "  \"Pete\": \"Nick\",\n" +
-//                        "  \"Barbara\": \"Nick\",\n" +
-//                        "  \"Nick\": \"Sophie\",\n" +
-//                        "  \"Sophie\" \"Jonas\"\n" +
-//                        "}"
-//                )
-//            }.apply {
-//                assertEquals(HttpStatusCode.NoContent, response.status())
-//            }
-//        }
-//    }
+    @Test
+    fun testInvalidJson() {
+        withTestApplication({ module(testing = true) }) {
+            handleRequest(HttpMethod.Post, "/newHierarchy") {
+                addHeader("content-type", "application/x-www-form-urlencoded")
+                addHeader("Accept", "application/json")
+                setBody("{\n" +
+                        "  \"Pete\": \"Nick\",\n" +
+                        "  \"Barbara\": \"Nick\",\n" +
+                        "  \"Nick\": \"Sophie\",\n" +
+                        "  \"Sophie\" \"Jonas\"\n" +
+                        "}"
+                )
+            }.apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals("Json is invalid", response.content)
+            }
+        }
+    }
 }

@@ -73,20 +73,14 @@ fun Application.module(testing: Boolean = false) {
             try {
                 val mapper = jacksonObjectMapper();
 
-                val employeeHierarchy: List<Pair<String, String>>? =
-                    try {
-                        mapper
+                val employeeHierarchy: List<Pair<String, String>>? = mapper
                             .readTree(post)
                             .deepCopy<ObjectNode>()
                             .fields()
                             .asSequence()
                             .map { Pair(it.key, it.value.asText()!!) }
                             .toList()
-                    } catch (jpe: JsonParseException) {
-                        null
-                    } catch (e: IOException) {
-                        null
-                    }
+
 
                 if (null == employeeHierarchy) {
                     call.respondText("Json error", contentType = ContentType.Application.Json)
@@ -125,6 +119,10 @@ fun Application.module(testing: Boolean = false) {
                 call.respond(json)
             } catch (e: CycleException) {
                 call.respondText("a cycle have been detected in the hierarchy", contentType = ContentType.Application.Json)
+            } catch (jpe: JsonParseException) {
+                call.respondText("Json is invalid", contentType = ContentType.Application.Json)
+            } catch (e: IOException) {
+                call.respondText("Json is invalid", contentType = ContentType.Application.Json)
             }
         }
 
