@@ -1,5 +1,6 @@
 package com.personio
 
+import com.fasterxml.jackson.core.JsonParseException
 import io.ktor.application.*
 import io.ktor.response.*
 import io.ktor.request.*
@@ -13,10 +14,14 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.personio.Application.AdjacencyListBuilder
 import com.personio.Application.HierarchyTreeBuilder
 import com.personio.Application.HierarchyTreeValidator
+import com.personio.Domain.CycleException
 import com.personio.Domain.Employee
+import com.personio.Domain.ManagedTwiceException
+import com.personio.Domain.TwoCeoException
 import com.personio.Infrastructure.InMemoryEmployeeRepository
 import io.ktor.jackson.*
 import io.ktor.client.*
+import io.ktor.utils.io.errors.IOException
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -61,41 +66,66 @@ fun Application.module(testing: Boolean = false) {
             repository.empty();
             val post = call.receiveText()
 
-            val mapper = jacksonObjectMapper();
-
-            val employeeHierarchy = mapper
-                    .readTree(post)
-                    .deepCopy<ObjectNode>()
-                    .fields()
-                    .asSequence()
-                    .map { Pair(it.key, it.value.asText()!!) }
-                    .toList()
-
-            val mapToAdjacencyList = AdjacencyListBuilder();
-
-            val adjacencyList = mapToAdjacencyList.toAdjacencyList(employeeHierarchy).map { it.first to it.second }
-
-            val validator = HierarchyTreeValidator()
-            validator.validate(adjacencyList)
-
-            val employees = employeeHierarchy.flatMap { listOf(it.first, it.second) }.toSet().map { it to Employee(it) }
-
-            val adjacencyListAsMap = adjacencyList.toMap()
-            val employeesAsMap = employees.toMap()
-
-            employees.forEach { employee ->
-                adjacencyListAsMap[employee.first]!!.forEach { managed -> employee.second.supervise(employeesAsMap[managed]!!) }
+            if (post == "") {
+                call.respond(HttpStatusCode.NoContent)
             }
 
-            employees.forEach {
-                repository.save(it.second)
+            try {
+                val mapper = jacksonObjectMapper();
+
+                val employeeHierarchy: List<Pair<String, String>>? =
+                    try {
+                        mapper
+                            .readTree(post)
+                            .deepCopy<ObjectNode>()
+                            .fields()
+                            .asSequence()
+                            .map { Pair(it.key, it.value.asText()!!) }
+                            .toList()
+                    } catch (jpe: JsonParseException) {
+                        null
+                    } catch (e: IOException) {
+                        null
+                    }
+
+                if (null == employeeHierarchy) {
+                    call.respondText("Json error", contentType = ContentType.Application.Json)
+                }
+
+                val mapToAdjacencyList = AdjacencyListBuilder();
+
+                val adjacencyList =
+                    mapToAdjacencyList.toAdjacencyList(employeeHierarchy!!).map { it.first to it.second }
+
+                try {
+                    val validator = HierarchyTreeValidator()
+                    validator.validate(adjacencyList)
+                } catch (e: TwoCeoException) {
+                    call.respondText("There is two CEO in the hierarchy", contentType = ContentType.Application.Json)
+                } catch (e: ManagedTwiceException) {
+                    call.respondText("An employee is managed twice", contentType = ContentType.Application.Json)
+                }
+
+                val employees =
+                    employeeHierarchy.flatMap { listOf(it.first, it.second) }.toSet().map { it to Employee(it) }
+
+                val adjacencyListAsMap = adjacencyList.toMap()
+                val employeesAsMap = employees.toMap()
+
+                employees.forEach { employee ->
+                    adjacencyListAsMap[employee.first]!!.forEach { managed -> employee.second.supervise(employeesAsMap[managed]!!) }
+                }
+
+                employees.forEach {
+                    repository.save(it.second)
+                }
+
+                val getTreeHierarchy = HierarchyTreeBuilder(repository)
+                val json = getTreeHierarchy.invoke().toJson()
+                call.respond(json)
+            } catch (e: CycleException) {
+                call.respondText("a cycle have been detected in the hierarchy", contentType = ContentType.Application.Json)
             }
-
-            val getTreeHierarchy = HierarchyTreeBuilder(repository)
-
-            val json = getTreeHierarchy.invoke().toJson()
-
-            call.respond(json)
         }
 
         get("/employeeHierarchy") {

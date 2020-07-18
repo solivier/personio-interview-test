@@ -1,6 +1,7 @@
 package com.personio.Application
 
-import java.lang.RuntimeException
+import com.personio.Domain.ManagedTwiceException
+import com.personio.Domain.TwoCeoException
 
 class HierarchyTreeValidator {
     fun validate(adjacencyList: List<Pair<String, List<String>>>) {
@@ -8,13 +9,13 @@ class HierarchyTreeValidator {
         val res = employeeToHierarchy.filter { isSupervisedBy -> isSupervisedBy > 1 }
 
         if (res.isNotEmpty()) {
-            throw RuntimeException("Employee is managed twice !")
+            throw ManagedTwiceException("Employee is managed twice !")
         }
 
         val res2 = employeeToHierarchy.filter { isSupervisedBy -> isSupervisedBy == 0 }
 
         if (res2.size > 1) {
-            throw RuntimeException("There are two CEO !")
+            throw TwoCeoException("There are two CEO !")
         }
     }
 }

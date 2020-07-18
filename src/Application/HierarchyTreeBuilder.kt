@@ -1,11 +1,13 @@
 package com.personio.Application
 
+import com.personio.Domain.CycleException
 import com.personio.Domain.EmployeeRepository
 import com.personio.Infrastructure.EmployeeNode
 
 class HierarchyTreeBuilder(val repository: EmployeeRepository) {
     fun invoke(): EmployeeNode {
         val root = repository.all().findLast { e -> e.isDirectlyManagedBy == null }
+            ?: throw CycleException("A cycle have been detected in the hierarchy")
 
         return root!!.generateGraph(repository.all().filter { it.name != root.name })
     }
