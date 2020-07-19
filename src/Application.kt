@@ -136,12 +136,12 @@ fun Application.module(testing: Boolean = false) {
         get("/employeeHierarchy") {
             if (0 == repository.all().count()) {
                 call.respondText("No tree in database", contentType = ContentType.Application.Json)
+            } else {
+                val getTreeHierarchy = HierarchyTreeBuilder(repository)
+                val employeeNode = getTreeHierarchy.invoke()
+
+                call.respondText(employeeNode.toJson(), contentType = ContentType.Application.Json)
             }
-
-            val getTreeHierarchy = HierarchyTreeBuilder(repository)
-            val employeeNode = getTreeHierarchy.invoke()
-
-            call.respondText(employeeNode.toJson(), contentType = ContentType.Application.Json)
         }
 
         get("/employeeSupervisors/{name}") {

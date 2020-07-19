@@ -27,6 +27,11 @@ class ApplicationTest {
     @Test
     fun testNoEmployeeHierarchy() {
         withTestApplication({ module(testing = true) }) {
+            handleRequest(HttpMethod.Post, "/newHierarchy") {
+                addHeader("content-type", "application/x-www-form-urlencoded")
+                addHeader("Accept", "application/json")
+                setBody("{}")
+            }
             handleRequest(HttpMethod.Get, "/employeeHierarchy").apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertEquals("No tree in database", response.content)

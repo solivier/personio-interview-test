@@ -1,4 +1,8 @@
-POST http://localhost:8080/newHierarchy
+GET http://localhost:8080/employeeHierarchy
+Accept: application/json
+
+###
+POST http://localhost:8080/employeeHierarchy
 Content-Type: application/json
 
 {
