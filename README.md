@@ -3,10 +3,11 @@
 How to run the project
 
 - Docker way (need docker installed):
+  - gradle build
   - docker build -t personio . 
   - docker run -m512M --cpus 2 -it -p 8080:8080 --rm personio
-  
-- with gradle:
+
+- locally:
   - gradle build
   - gradle run
 
