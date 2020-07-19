@@ -25,6 +25,16 @@ class ApplicationTest {
     }
 
     @Test
+    fun testNoEmployeeHierarchy() {
+        withTestApplication({ module(testing = true) }) {
+            handleRequest(HttpMethod.Get, "/employeeHierarchy").apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals("No tree in database", response.content)
+            }
+        }
+    }
+
+    @Test
     fun testEmployeeHierarchy() {
         withTestApplication({ module(testing = true) }) {
             handleRequest(HttpMethod.Post, "/newHierarchy") {
