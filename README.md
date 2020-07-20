@@ -18,6 +18,7 @@ How to run the project:
   - gradle run
 
 Endpoints:
+(Credentials: "user" - "password")
 
 - http://localhost:8080/employeeHierarchy
 - http://localhost:8080/employeeSupervisors/Sophie
