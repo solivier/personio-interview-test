@@ -30,9 +30,12 @@ class ApplicationTest {
             handleRequest(HttpMethod.Post, "/newHierarchy") {
                 addHeader("content-type", "application/x-www-form-urlencoded")
                 addHeader("Accept", "application/json")
+                addHeader("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
                 setBody("{}")
             }
-            handleRequest(HttpMethod.Get, "/employeeHierarchy").apply {
+            handleRequest(HttpMethod.Get, "/employeeHierarchy") {
+                addHeader("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
+            }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertEquals("No tree in database", response.content)
             }
@@ -45,6 +48,7 @@ class ApplicationTest {
             handleRequest(HttpMethod.Post, "/newHierarchy") {
                 addHeader("content-type", "application/x-www-form-urlencoded")
                 addHeader("Accept", "application/json")
+                addHeader("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
                 setBody("{\n" +
                         "  \"Pete\": \"Nick\",\n" +
                         "  \"Barbara\": \"Nick\",\n" +
@@ -53,7 +57,9 @@ class ApplicationTest {
                         "}"
                 )
             }
-            handleRequest(HttpMethod.Get, "/employeeHierarchy").apply {
+            handleRequest(HttpMethod.Get, "/employeeHierarchy") {
+                addHeader("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
+            }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertEquals("{\n" +
                         "  \"Jonas\" : {\n" +
@@ -75,6 +81,7 @@ class ApplicationTest {
             handleRequest(HttpMethod.Post, "/newHierarchy") {
                 addHeader("content-type", "application/x-www-form-urlencoded")
                 addHeader("Accept", "application/json")
+                addHeader("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
                 setBody("{\n" +
                         "  \"Pete\": \"Nick\",\n" +
                         "  \"Barbara\": \"Nick\",\n" +
@@ -94,6 +101,7 @@ class ApplicationTest {
             handleRequest(HttpMethod.Post, "/newHierarchy") {
                 addHeader("content-type", "application/x-www-form-urlencoded")
                 addHeader("Accept", "application/json")
+                addHeader("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
                 setBody("{\n" +
                         "  \"Pete\": \"Nick\",\n" +
                         "  \"Barbara\": \"Nick\",\n" +
@@ -102,7 +110,9 @@ class ApplicationTest {
                         "}"
                 )
             }
-            handleRequest(HttpMethod.Get, "/employeeSupervisors/Pete").apply {
+            handleRequest(HttpMethod.Get, "/employeeSupervisors/Pete") {
+                addHeader("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
+            }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertEquals("{\n" +
                         "  \"Sophie\" : {\n" +
@@ -121,6 +131,7 @@ class ApplicationTest {
             handleRequest(HttpMethod.Post, "/newHierarchy") {
                 addHeader("content-type", "application/x-www-form-urlencoded")
                 addHeader("Accept", "application/json")
+                addHeader("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
                 setBody("{\n" +
                         "  \"Pete\": \"Nick\",\n" +
                         "  \"Barbara\": \"Nick\",\n" +
@@ -129,7 +140,9 @@ class ApplicationTest {
                         "}"
                 )
             }
-            handleRequest(HttpMethod.Get, "/employeeSupervisors/Sophie").apply {
+            handleRequest(HttpMethod.Get, "/employeeSupervisors/Sophie") {
+                addHeader("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
+            }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertEquals("{\n" +
                         "  \"Jonas\" : {\n" +
@@ -146,6 +159,7 @@ class ApplicationTest {
             handleRequest(HttpMethod.Post, "/newHierarchy") {
                 addHeader("content-type", "application/x-www-form-urlencoded")
                 addHeader("Accept", "application/json")
+                addHeader("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
                 setBody("{\n" +
                         "  \"Pete\": \"Nick\",\n" +
                         "  \"Barbara\": \"Nick\",\n" +
@@ -154,7 +168,9 @@ class ApplicationTest {
                         "}"
                 )
             }
-            handleRequest(HttpMethod.Get, "/employeeSupervisors/Jonas").apply {
+            handleRequest(HttpMethod.Get, "/employeeSupervisors/Jonas") {
+                addHeader("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
+            }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertEquals("{\n" +
                         "  \"Jonas\" : { }\n" +
@@ -169,6 +185,7 @@ class ApplicationTest {
             handleRequest(HttpMethod.Post, "/newHierarchy") {
                 addHeader("content-type", "application/x-www-form-urlencoded")
                 addHeader("Accept", "application/json")
+                addHeader("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
                 setBody("{\n" +
                         "  \"Nick\": \"Jonas\",\n" +
                         "  \"Pete\": \"Nick\",\n" +
@@ -189,6 +206,7 @@ class ApplicationTest {
             handleRequest(HttpMethod.Post, "/newHierarchy") {
                 addHeader("content-type", "application/x-www-form-urlencoded")
                 addHeader("Accept", "application/json")
+                addHeader("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
                 setBody("{\n" +
                         "  \"Pete\": \"Nick\",\n" +
                         "  \"Barbara\": \"Nick\",\n" +
@@ -209,6 +227,7 @@ class ApplicationTest {
             handleRequest(HttpMethod.Post, "/newHierarchy") {
                 addHeader("content-type", "application/x-www-form-urlencoded")
                 addHeader("Accept", "application/json")
+                addHeader("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
                 setBody("{\n" +
                         "  \"Pete\": \"Nick\",\n" +
                         "  \"Barbara\": \"Nick\",\n" +
@@ -217,7 +236,9 @@ class ApplicationTest {
                         "}"
                 )
             }
-            handleRequest(HttpMethod.Get, "/employeeSupervisors/Michel").apply {
+            handleRequest(HttpMethod.Get, "/employeeSupervisors/Michel") {
+                addHeader("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
+            }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertEquals("No employee named: \"Michel\" found !", response.content)
             }

@@ -39,9 +39,9 @@ fun Application.module(testing: Boolean = false) {
     }
 
     install(Authentication) {
-        basic("myBasicAuth") {
-            realm = "Ktor Server"
-            validate { if (it.name == "test" && it.password == "password") UserIdPrincipal(it.name) else null }
+        basic {
+            realm = "myrealm"
+            validate { if (it.name == "user" && it.password == "password") UserIdPrincipal("user") else null }
         }
     }
 
@@ -69,94 +69,106 @@ fun Application.module(testing: Boolean = false) {
             call.respondText("HELLO WORLD!", contentType = ContentType.Application.Json)
         }
 
-        post("/newHierarchy") {
-            repository.empty();
-            val post = call.receiveText()
+        authenticate {
+            post("/newHierarchy") {
+                repository.empty();
+                val post = call.receiveText()
 
-            if (post == "") {
-                call.respond(HttpStatusCode.NoContent)
-            }
-
-            try {
-                val mapper = jacksonObjectMapper();
-
-                val employeeHierarchy: List<Pair<String, String>>? = mapper
-                            .readTree(post)
-                            .deepCopy<ObjectNode>()
-                            .fields()
-                            .asSequence()
-                            .map { Pair(it.key, it.value.asText()!!) }
-                            .toList()
-
-
-                if (null == employeeHierarchy) {
-                    call.respondText("Json error", contentType = ContentType.Application.Json)
+                if (post == "") {
+                    call.respond(HttpStatusCode.NoContent)
                 }
-
-                val mapToAdjacencyList = AdjacencyListBuilder();
-
-                val adjacencyList =
-                    mapToAdjacencyList.toAdjacencyList(employeeHierarchy!!).map { it.first to it.second }
 
                 try {
-                    val validator = HierarchyTreeValidator()
-                    validator.validate(adjacencyList)
-                } catch (e: TwoCeoException) {
-                    call.respondText("There is two CEO in the hierarchy", contentType = ContentType.Application.Json)
-                } catch (e: ManagedTwiceException) {
-                    call.respondText("An employee is managed twice", contentType = ContentType.Application.Json)
+                    val mapper = jacksonObjectMapper();
+
+                    val employeeHierarchy: List<Pair<String, String>>? = mapper
+                        .readTree(post)
+                        .deepCopy<ObjectNode>()
+                        .fields()
+                        .asSequence()
+                        .map { Pair(it.key, it.value.asText()!!) }
+                        .toList()
+
+
+                    if (null == employeeHierarchy) {
+                        call.respondText("Json error", contentType = ContentType.Application.Json)
+                    }
+
+                    val mapToAdjacencyList = AdjacencyListBuilder();
+
+                    val adjacencyList =
+                        mapToAdjacencyList.toAdjacencyList(employeeHierarchy!!).map { it.first to it.second }
+
+                    try {
+                        val validator = HierarchyTreeValidator()
+                        validator.validate(adjacencyList)
+                    } catch (e: TwoCeoException) {
+                        call.respondText(
+                            "There is two CEO in the hierarchy",
+                            contentType = ContentType.Application.Json
+                        )
+                    } catch (e: ManagedTwiceException) {
+                        call.respondText("An employee is managed twice", contentType = ContentType.Application.Json)
+                    }
+
+                    val employees =
+                        employeeHierarchy.flatMap { listOf(it.first, it.second) }.toSet().map { it to Employee(it) }
+
+                    val adjacencyListAsMap = adjacencyList.toMap()
+                    val employeesAsMap = employees.toMap()
+
+                    employees.forEach { employee ->
+                        adjacencyListAsMap[employee.first]!!.forEach { managed ->
+                            employee.second.supervise(
+                                employeesAsMap[managed]!!
+                            )
+                        }
+                    }
+
+                    employees.forEach {
+                        repository.save(it.second)
+                    }
+
+                    val getTreeHierarchy = HierarchyTreeBuilder(repository)
+                    val json = getTreeHierarchy.invoke().toJson()
+                    call.respond(json)
+                } catch (e: CycleException) {
+                    call.respondText(
+                        "a cycle have been detected in the hierarchy",
+                        contentType = ContentType.Application.Json
+                    )
+                } catch (jpe: JsonParseException) {
+                    call.respondText("Json is invalid", contentType = ContentType.Application.Json)
+                } catch (e: IOException) {
+                    call.respondText("Json is invalid", contentType = ContentType.Application.Json)
                 }
+            }
 
-                val employees =
-                    employeeHierarchy.flatMap { listOf(it.first, it.second) }.toSet().map { it to Employee(it) }
+            get("/employeeHierarchy") {
+                if (0 == repository.all().count()) {
+                    call.respondText("No tree in database", contentType = ContentType.Application.Json)
+                } else {
+                    val getTreeHierarchy = HierarchyTreeBuilder(repository)
+                    val employeeNode = getTreeHierarchy.invoke()
 
-                val adjacencyListAsMap = adjacencyList.toMap()
-                val employeesAsMap = employees.toMap()
-
-                employees.forEach { employee ->
-                    adjacencyListAsMap[employee.first]!!.forEach { managed -> employee.second.supervise(employeesAsMap[managed]!!) }
+                    call.respondText(employeeNode.toJson(), contentType = ContentType.Application.Json)
                 }
+            }
 
-                employees.forEach {
-                    repository.save(it.second)
+            get("/employeeSupervisors/{name}") {
+                val name = call.parameters["name"]
+
+                if (0 == repository.all().count()) {
+                    call.respondText("No tree in database", contentType = ContentType.Application.Json)
                 }
 
                 val getTreeHierarchy = HierarchyTreeBuilder(repository)
-                val json = getTreeHierarchy.invoke().toJson()
-                call.respond(json)
-            } catch (e: CycleException) {
-                call.respondText("a cycle have been detected in the hierarchy", contentType = ContentType.Application.Json)
-            } catch (jpe: JsonParseException) {
-                call.respondText("Json is invalid", contentType = ContentType.Application.Json)
-            } catch (e: IOException) {
-                call.respondText("Json is invalid", contentType = ContentType.Application.Json)
-            }
-        }
-
-        get("/employeeHierarchy") {
-            if (0 == repository.all().count()) {
-                call.respondText("No tree in database", contentType = ContentType.Application.Json)
-            } else {
-                val getTreeHierarchy = HierarchyTreeBuilder(repository)
-                val employeeNode = getTreeHierarchy.invoke()
-
-                call.respondText(employeeNode.toJson(), contentType = ContentType.Application.Json)
-            }
-        }
-
-        get("/employeeSupervisors/{name}") {
-            val name = call.parameters["name"]
-
-            if (0 == repository.all().count()) {
-                call.respondText("No tree in database", contentType = ContentType.Application.Json)
-            }
-
-            val getTreeHierarchy = HierarchyTreeBuilder(repository)
-            try {
-                val actual = getTreeHierarchy.getSupervisors(name!!)
-                call.respondText(actual.toJson(), contentType = ContentType.Application.Json)
-            } catch (e: NoEmployeeFoundException) {
-                call.respondText(e.message.toString(), contentType = ContentType.Application.Json)
+                try {
+                    val actual = getTreeHierarchy.getSupervisors(name!!)
+                    call.respondText(actual.toJson(), contentType = ContentType.Application.Json)
+                } catch (e: NoEmployeeFoundException) {
+                    call.respondText(e.message.toString(), contentType = ContentType.Application.Json)
+                }
             }
         }
     }
